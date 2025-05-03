@@ -1,0 +1,79 @@
+:root {
+    --bs-primary-rgb: 78, 115, 223;
+    --bs-body-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    font-family: var(--bs-body-font-family);
+}
+
+h1.display-5 {
+    font-weight: 300;
+}
+
+.card {
+    border: none;
+    height: 100%;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 120px;
+}
+
+textarea#outputText {
+    font-weight: 500;
+    background-color: #e9ecef;
+}
+
+#languageSelect {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+#detectedLang {
+    font-weight: bold;
+}
+#detectConfidence {
+    font-size: 0.8em;
+    color: #6c757d;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    justify-content: center;
+}
+
+.btn .spinner-border {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+    .container {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    h1.display-5 {
+        font-size: 2rem;
+    }
+
+}
+
+header nav {
+    flex-wrap: wrap;
+}
+
+#copyToast .toast-header {
+    background-color: rgba(var(--bs-success-rgb), 0.85);
+    color: white;
+}
+#copyToast .btn-close {
+    filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+#languageSearch {
+    font-size: 0.875rem;
+}
