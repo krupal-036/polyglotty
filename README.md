@@ -5,6 +5,8 @@
 Built using **Flask**, **JavaScript**, and **Google APIs**, this tool offers seamless translation and natural-sounding text-to-speech functionality, wrapped in a clean and responsive UI.
 
 ---
+## ↗️ Live Demo: [polyglotty.vercel.app](https://polyglotty.vercel.app/)
+---
 
 ## ✨ Features
 
