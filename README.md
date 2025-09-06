@@ -6,8 +6,14 @@ Built using **Flask**, **JavaScript**, and **Google APIs**, this tool offers sea
 
 ---
 ## ↗️ Live Demo: [polyglotty.vercel.app](https://polyglotty.vercel.app/)
----
 
+<div align="center" style="display: flex; flex-direction: column; border: none; padding: 0; margin: 0; line-height: 0;">
+  <img src="https://github.com/user-attachments/assets/8c3791ec-f135-43d0-8503-97936ea82fe4" alt="Screenshot 1" style="width: 100%; display: block; margin: 0; padding: 0; border: none;">
+  <img src="https://github.com/user-attachments/assets/b1a6d718-34a1-47d0-84c3-ed2bae0b3ba4" alt="Screenshot 2" style="width: 100%; display: block; margin: 0; padding: 0; border: none;">
+  <img src="https://github.com/user-attachments/assets/9e04469a-1604-47bd-a689-bdf55ec24eba" alt="Screenshot 3" style="width: 100%; display: block; margin: 0; padding: 0; border: none;">
+</div>
+
+---
 ## ✨ Features
 
 - 🌍 Detects and translates between multiple languages
