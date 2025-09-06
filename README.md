@@ -1,5 +1,11 @@
 # 🌐 Polyglotty
 
+[![Status](https://img.shields.io/badge/Status-Live-brightgreen)](https://polyglotty.vercel.app/)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python)](https://www.python.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.x-black.svg)](https://flask.palletsprojects.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Deployment](https://img.shields.io/badge/Deployment-Vercel-blue?logo=vercel)](https://vercel.com/)
+
 **Polyglotty** is a powerful, minimalistic web application that allows users to seamlessly translate text between languages and convert both the original and translated text into speech — right in your browser. Whether you're learning a new language, practicing pronunciation, or communicating across borders, Polyglotty has you covered.
 
 Built using **Flask**, **JavaScript**, and **Google APIs**, this tool offers seamless translation and natural-sounding text-to-speech functionality, wrapped in a clean and responsive UI.
