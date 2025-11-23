@@ -17,6 +17,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorToastEl = document.getElementById('errorToast');
     const errorToastMsg = document.getElementById('errorToastMessage');
 
+    const swapBtn = document.getElementById("swapBtn");
+    const historyToggle = document.getElementById("historyToggle");
+    const historySection = document.getElementById("historySection");
+    const historyList = document.getElementById("historyList");
+    const clearHistoryBtn = document.getElementById("clearHistoryBtn");
+    const closeHistoryBtn = document.getElementById("closeHistoryBtn");
+
     const copyToast = new bootstrap.Toast(copyToastEl);
     const errorToast = new bootstrap.Toast(errorToastEl);
 
@@ -58,7 +65,6 @@ document.addEventListener("DOMContentLoaded", function () {
         errorToastMsg.textContent = message;
         errorToast.show();
     }
-
 
     function stopSpeech() {
         if (synth.speaking) {
@@ -160,7 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-
     textInput.addEventListener("input", function () {
         clearTimeout(detectTimeout);
         const text = this.value;
@@ -230,13 +235,19 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(data => {
                 if (data.translated_text !== undefined) {
                     outputText.value = data.translated_text;
+
+                    saveToHistory(
+                        text,
+                        data.translated_text,
+                        detectedLangSpan.innerText,
+                        targetLang
+                    );
                 }
                 else if (data.error) {
                     console.error("Translation Error:", data.error);
                     showErrorToast(data.error);
                     outputText.value = "";
                 }
-
                 else {
                     console.error("Unexpected response format:", data);
                     showErrorToast("Received an unexpected response from the server.");
@@ -288,10 +299,211 @@ document.addEventListener("DOMContentLoaded", function () {
         textInput.focus();
     });
 
+    swapBtn.addEventListener("click", function () {
+        const originalText = textInput.value;
+        const translatedText = outputText.value;
+        const detectedLang = detectedLangSpan.innerText;
+        const targetLang = languageSelect.value;
+
+        textInput.value = translatedText;
+        outputText.value = originalText;
+
+        if (detectedLang && detectedLang !== "N/A" && detectedLang !== "Error" && detectedLang !== "Unknown") {
+            const options = languageSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === detectedLang) {
+                    languageSelect.value = detectedLang;
+                    break;
+                }
+            }
+
+            detectedLangSpan.innerText = targetLang;
+            detectConfidenceSpan.innerText = "";
+
+            if (translatedText.trim()) {
+                const event = new Event('input', { bubbles: true });
+                textInput.dispatchEvent(event);
+            }
+        }
+    });
+
+    function saveToHistory(originalText, translatedText, sourceLang, targetLang) {
+        if (!originalText.trim() || !translatedText.trim()) return;
+
+        const historyItem = {
+            id: Date.now(),
+            originalText,
+            translatedText,
+            sourceLang,
+            targetLang,
+            timestamp: new Date().toISOString()
+        };
+
+        let history = JSON.parse(localStorage.getItem('polyglottyHistory') || '[]');
+
+        history.unshift(historyItem);
+
+        if (history.length > 50) {
+            history = history.slice(0, 50);
+        }
+
+        localStorage.setItem('polyglottyHistory', JSON.stringify(history));
+        loadHistory();
+    }
+
+    function loadHistory() {
+        const history = JSON.parse(localStorage.getItem('polyglottyHistory') || '[]');
+
+        if (history.length === 0) {
+            historyList.innerHTML = '<p class="text-center text-muted py-4">No translation history yet.</p>';
+            return;
+        }
+
+        historyList.innerHTML = '';
+
+        history.forEach(item => {
+            const date = new Date(item.timestamp);
+            const formattedDate = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const historyItemEl = document.createElement('div');
+            historyItemEl.className = 'history-item';
+            historyItemEl.innerHTML = `
+                <div class="history-item-header">
+                    <div class="history-languages">${getLanguageName(item.sourceLang)} → ${getLanguageName(item.targetLang)}</div>
+                    <div class="history-timestamp">${formattedDate}</div>
+                </div>
+                <div class="history-texts">
+                    <div class="history-text history-original">${escapeHtml(item.originalText)}</div>
+                    <div class="history-text history-translated">${escapeHtml(item.translatedText)}</div>
+                </div>
+                <div class="history-actions">
+                    <button class="btn btn-sm btn-outline-primary history-btn use-translation-btn" data-id="${item.id}">
+                        <i class="bi bi-arrow-repeat me-1"></i> Use
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary history-btn copy-history-btn" data-id="${item.id}">
+                        <i class="bi bi-clipboard me-1"></i> Copy
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger history-btn delete-history-btn" data-id="${item.id}">
+                        <i class="bi bi-trash me-1"></i> Delete
+                    </button>
+                </div>
+            `;
+
+            historyList.appendChild(historyItemEl);
+        });
+
+        document.querySelectorAll('.use-translation-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                useTranslation(id);
+            });
+        });
+
+        document.querySelectorAll('.copy-history-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                copyTranslation(id);
+            });
+        });
+
+        document.querySelectorAll('.delete-history-btn').forEach(btn => {
+            btn.addEventListener('click', function () {
+                const id = parseInt(this.getAttribute('data-id'));
+                deleteHistoryItem(id);
+            });
+        });
+    }
+
+    function getLanguageName(langCode) {
+        const options = languageSelect.options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === langCode) {
+                return options[i].textContent;
+            }
+        }
+        return langCode;
+    }
+
+    function escapeHtml(text) {
+        const map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function useTranslation(id) {
+        const history = JSON.parse(localStorage.getItem('polyglottyHistory') || '[]');
+        const item = history.find(h => h.id === id);
+
+        if (item) {
+            textInput.value = item.originalText;
+            outputText.value = item.translatedText;
+            detectedLangSpan.innerText = item.sourceLang;
+            detectConfidenceSpan.innerText = "";
+
+            const options = languageSelect.options;
+            for (let i = 0; i < options.length; i++) {
+                if (options[i].value === item.targetLang) {
+                    languageSelect.value = item.targetLang;
+                    break;
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function copyTranslation(id) {
+        const history = JSON.parse(localStorage.getItem('polyglottyHistory') || '[]');
+        const item = history.find(h => h.id === id);
+
+        if (item) {
+            navigator.clipboard.writeText(item.translatedText)
+                .then(() => {
+                    copyToast.show();
+                })
+                .catch(err => {
+                    console.error("Failed to copy text: ", err);
+                    showErrorToast("Failed to copy text to clipboard.");
+                });
+        }
+    }
+
+    function deleteHistoryItem(id) {
+        let history = JSON.parse(localStorage.getItem('polyglottyHistory') || '[]');
+        history = history.filter(h => h.id !== id);
+        localStorage.setItem('polyglottyHistory', JSON.stringify(history));
+        loadHistory();
+    }
+
+    function clearHistory() {
+        if (confirm('Are you sure you want to clear all translation history?')) {
+            localStorage.removeItem('polyglottyHistory');
+            loadHistory();
+        }
+    }
+
+    historyToggle.addEventListener('click', function (e) {
+        e.preventDefault();
+        historySection.classList.toggle('d-none');
+        if (!historySection.classList.contains('d-none')) {
+            loadHistory();
+        }
+    });
+
+    closeHistoryBtn.addEventListener('click', function () {
+        historySection.classList.add('d-none');
+    });
+
+    clearHistoryBtn.addEventListener('click', clearHistory);
+
     window.addEventListener('beforeunload', stopSpeech);
 
     resetSpeechButtons();
     filterLanguages("");
     detectedLangSpan.innerText = "N/A";
-
 });
